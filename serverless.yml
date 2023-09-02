@@ -7,6 +7,7 @@ frameworkVersion: "3"
 # Add the serverless-webpack plugin
 plugins:
   - serverless-webpack
+  - serverless-iam-roles-per-function
 
 provider:
   name: aws
@@ -18,3 +19,14 @@ functions:
     handler: first.hello
   second:
     handler: second.hello
+  costNotifier:
+    handler: src/costNotifier.handler
+    events:
+      - schedule: cron(0 0 * * ? *)
+    environment:
+      SLACK_WEBHOOK_URL: ${ssm:LAMBDA_SLACK_WEBHOOK}
+    iamRoleStatements:
+    - Effect: Allow
+      Action:
+        -  ce:GetCostAndUsage
+      Resource: "*"
